@@ -115,13 +115,24 @@ async fn root_get_inner(state: ServerState) -> Response<BoxBody> {
 async fn get_cat_ascii_art(client: &reqwest::Client) -> color_eyre::Result<String> {
     let tracer = global::tracer("");
 
-    let image_url = get_cat_image_url(client)
-        .with_context(Context::current_with_span(
-            tracer.start("get_cat_image_url"),
-        ))
-        .await?;
+    #[derive(Deserialize)]
+    struct CatImage {
+        url: String,
+    }
 
-    let image_bytes = download_file(client, &image_url)
+    let random_cat = client
+        .get("https://api.thecatapi.com/v1/images/search")
+        .send()
+        .with_context(Context::current_with_span(tracer.start("api_headers")))
+        .await?
+        .error_for_status()?
+        .json::<Vec<CatImage>>()
+        .with_context(Context::current_with_span(tracer.start("api_body")))
+        .await?
+        .pop()
+        .ok_or_else(|| color_eyre::eyre::eyre!("The Cat API returned no images"))?;
+
+    let image_bytes = download_file(client, &random_cat.url)
         .with_context(Context::current_with_span(tracer.start("download_file")))
         .await?;
 
@@ -146,27 +157,6 @@ async fn get_cat_ascii_art(client: &reqwest::Client) -> color_eyre::Result<Strin
     });
 
     Ok(ascii_art)
-}
-
-async fn get_cat_image_url(client: &reqwest::Client) -> color_eyre::Result<String> {
-    #[derive(Deserialize)]
-    struct CatImage {
-        url: String,
-    }
-
-    let api_url = "https://api.thecatapi.com/v1/images/search";
-
-    let image = client
-        .get(api_url)
-        .send()
-        .await?
-        .error_for_status()?
-        .json::<Vec<CatImage>>()
-        .await?
-        .pop()
-        .ok_or_else(|| color_eyre::eyre::eyre!("The Cat API returned no images"))?;
-
-    Ok(image.url)
 }
 
 async fn download_file(client: &reqwest::Client, url: &str) -> color_eyre::Result<Vec<u8>> {
