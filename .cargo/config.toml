@@ -1,0 +1,8 @@
+[registries.itsrainingmani]
+index = "ssh://git@ssh.shipyard.rs/itsrainingmani/crate-index.git"
+
+[net]
+git-fetch-with-cli = true
+
+[unstable]
+registry-auth = true
