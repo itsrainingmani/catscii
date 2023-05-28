@@ -8,7 +8,7 @@ use axum::{
 };
 use reqwest::StatusCode;
 use serde::Deserialize;
-use std::str::FromStr;
+use std::{net::IpAddr, str::FromStr};
 
 use tracing::{info, warn, Level};
 use tracing_subscriber::{filter::Targets, layer::SubscriberExt, util::SubscriberInitExt};
@@ -19,9 +19,13 @@ use opentelemetry::{
     Context, KeyValue,
 };
 
+use locat::Locat;
+use std::sync::Arc;
+
 #[derive(Clone)]
 struct ServerState {
     client: reqwest::Client,
+    locat: Arc<Locat>,
 }
 
 #[tokio::main]
@@ -55,6 +59,7 @@ async fn main() {
 
     let state = ServerState {
         client: Default::default(),
+        locat: Arc::new(Locat::new("todo_geoip_path.mmdb", "todo_analytics.db")),
     };
 
     let app = Router::new()
@@ -77,6 +82,13 @@ async fn main() {
         .unwrap();
 }
 
+fn get_client_addr(headers: &HeaderMap) -> Option<IpAddr> {
+    let header = headers.get("fly-client-ip")?;
+    let header = header.to_str().ok()?;
+    let addr = header.parse::<IpAddr>().ok()?;
+    Some(addr)
+}
+
 async fn root_get(headers: HeaderMap, State(state): State<ServerState>) -> Response<BoxBody> {
     let tracer = global::tracer("");
     let mut span = tracer.start("root_get");
@@ -87,6 +99,16 @@ async fn root_get(headers: HeaderMap, State(state): State<ServerState>) -> Respo
             .map(|h| h.to_str().unwrap_or_default().to_owned())
             .unwrap_or_default(),
     ));
+
+    if let Some(addr) = get_client_addr(&headers) {
+        match state.locat.ip_to_iso_code(addr) {
+            Some(country) => {
+                info!("Got request from {country}");
+                span.set_attribute(KeyValue::new("country", country.to_string()));
+            }
+            None => warn!("Could not determine country for IP Address"),
+        }
+    }
 
     root_get_inner(state)
         .with_context(Context::current_with_span(span))
