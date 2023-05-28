@@ -10,15 +10,15 @@ FROM base AS builder
 RUN set -eux; \
 		apt update; \
 		apt install -y --no-install-recommends \
-			curl ca-certificates gcc libc6-dev pkg-config libssl-dev \
-			;
+		openssh-client git-core curl ca-certificates gcc libc6-dev pkg-config libssl-dev \
+		;
 
 # Install rustup
 RUN --mount=type=cache,target=/root/.rustup \
 		set -eux; \
 		curl --location --fail \
-			"https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init" \
-			--output rustup-init; \
+		"https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init" \
+		--output rustup-init; \
 		chmod +x rustup-init; \
 		./rustup-init -y --no-modify-path --default-toolchain stable; \
 		rm rustup-init;
@@ -31,12 +31,18 @@ RUN set -eux; \
 # Copy sources and build them
 WORKDIR /app
 COPY src src
-COPY Cargo.toml Cargo.lock ./
+COPY .cargo .cargo
+COPY Cargo.toml Cargo.lock rust-toolchain.toml ./
+RUN mkdir -p ~/.ssh/ && ssh-keyscan ssh.shipyard.rs >> ~/.ssh/known_hosts
 RUN --mount=type=cache,target=/root/.rustup \
-    --mount=type=cache,target=/root/.cargo/registry \
-    --mount=type=cache,target=/root/.cargo/git \
+		--mount=type=cache,target=/root/.cargo/registry \
+		--mount=type=cache,target=/root/.cargo/git \
 		--mount=type=cache,target=/app/target \
+		--mount=type=ssh \
+		--mount=type=secret,id=shipyard-token \
 		set -eux; \
+		export CARGO_REGISTRIES_ITSRAININGMANI_TOKEN=$(cat /run/secrets/shipyard-token); \
+		rustc --version; \
 		cargo build --release; \
 		objcopy --compress-debug-sections ./target/release/catscii ./catscii
 
@@ -51,8 +57,8 @@ SHELL ["/bin/bash", "-c"]
 RUN set -eux; \
 		apt update; \
 		apt install -y --no-install-recommends \
-			ca-certificates \
-			; \
+		ca-certificates \
+		; \
 		apt clean autoclean; \
 		apt autoremove --yes; \
 		rm -rf /var/lib/{apt,dpkg,cache,log}/
