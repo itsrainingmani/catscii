@@ -11,6 +11,7 @@ RUN set -eux; \
 		apt update; \
 		apt install -y --no-install-recommends \
 		openssh-client git-core curl ca-certificates gcc libc6-dev pkg-config libssl-dev \
+		libsqlite3-dev \
 		;
 
 # Install rustup
@@ -58,6 +59,7 @@ RUN set -eux; \
 		apt update; \
 		apt install -y --no-install-recommends \
 		ca-certificates \
+		libsqlite3-0 \
 		; \
 		apt clean autoclean; \
 		apt autoremove --yes; \
