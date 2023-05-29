@@ -34,8 +34,6 @@ COPY src src
 COPY .cargo .cargo
 COPY Cargo.toml Cargo.lock rust-toolchain.toml ./
 RUN mkdir -p ~/.ssh/ && ssh-keyscan ssh.shipyard.rs >> ~/.ssh/known_hosts
-RUN mkdir /db
-COPY ./db/GeoLite2-Country.mmdb /db/
 RUN --mount=type=cache,target=/root/.rustup \
 		--mount=type=cache,target=/root/.cargo/registry \
 		--mount=type=cache,target=/root/.cargo/git \
@@ -68,5 +66,8 @@ RUN set -eux; \
 # Copy app from builder
 WORKDIR /app
 COPY --from=builder /app/catscii .
+
+RUN mkdir /db 
+COPY ./db/GeoLite2-Country.mmdb /db/
 
 CMD ["/app/catscii"]
