@@ -59,7 +59,7 @@ async fn main() {
 
     let state = ServerState {
         client: Default::default(),
-        locat: Arc::new(Locat::new("todo_geoip_path.mmdb", "todo_analytics.db")),
+        locat: Arc::new(Locat::new("todo_geoip_path.mmdb", "todo_analytics.db").unwrap()),
     };
 
     let app = Router::new()
