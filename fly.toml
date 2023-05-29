@@ -5,6 +5,7 @@ processes = []
 
 [env]
 GEOLITE2_COUNTRY_DB = "/db/GeoLite2-Country.mmdb"
+ANALYTICS_DB = "analytics.db"
 
 [experimental]
   allowed_public_ports = []
