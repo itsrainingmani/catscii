@@ -57,9 +57,13 @@ async fn main() {
         .with(filter)
         .init();
 
+    let country_db_env_var = "GEOLITE2_COUNTRY_DB";
+    let country_db_path = std::env::var(country_db_env_var)
+        .unwrap_or_else(|_| panic!("${country_db_env_var} must be set"));
+
     let state = ServerState {
         client: Default::default(),
-        locat: Arc::new(Locat::new("todo_geoip_path.mmdb", "todo_analytics.db").unwrap()),
+        locat: Arc::new(Locat::new(&country_db_path, "todo_analytics.db").unwrap()),
     };
 
     let app = Router::new()
