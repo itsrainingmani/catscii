@@ -77,7 +77,7 @@
           devShells.default = mkShell {
             #refer to an existing derivation
             inputsFrom = [ bin ];
-            buildInputs = with pkgs; [ dive ];
+            buildInputs = with pkgs; [ dive flyctl just ];
           };
         }
       );

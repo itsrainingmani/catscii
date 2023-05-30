@@ -1,11 +1,13 @@
+# just manual: https://github.com/casey/just#readme
+
 _default:
   just --list
 
+docker:
+  #!/bin/bash -eux
+  nix build .#dockerImage
+  ./result | docker load
+
 deploy:
-  DOCKER_BUILDKIT=1 docker build \
-    --ssh default \
-    --secret id=shipyard-token,src=secrets/shipyard-token \
-    --target app \
-    --tag catscii \
-    .
+  just docker
   fly deploy --local-only
