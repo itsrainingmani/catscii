@@ -25,6 +25,7 @@
           overlays = [ (import rust-overlay) ];
           pkgs = import nixpkgs {
             inherit system overlays;
+            config.allowUnfree = true;
           };
           # this refers to the path ./rust-toolchain.toml
           rustToolchain = pkgs.pkgsBuildHost.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
@@ -54,6 +55,15 @@
           bin = craneLib.buildPackage (commonArgs // {
             inherit cargoArtifacts;
           });
+          dockerImage = pkgs.dockerTools.buildImage {
+            name = "catscii";
+            tag = "latest";
+            copyToRoot = [ bin pkgs.cacert ];
+            config = {
+              Cmd = [ "${bin}/bin/catscii" ];
+              Env = with pkgs; [ "GEOLITE2_COUNTRY_DB=${clash-geoip}/etc/clash/Country.mmdb" ];
+            };
+          };
         in
         with pkgs;
         {
@@ -61,12 +71,13 @@
             {
               # so we can build `bin` specifically
               # but it's also the default
-              inherit bin;
+              inherit bin dockerImage;
               default = bin;
             };
           devShells.default = mkShell {
             #refer to an existing derivation
             inputsFrom = [ bin ];
+            buildInputs = with pkgs; [ dive ];
           };
         }
       );
