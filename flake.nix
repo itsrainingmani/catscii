@@ -77,7 +77,11 @@
           devShells.default = mkShell {
             #refer to an existing derivation
             inputsFrom = [ bin ];
-            buildInputs = with pkgs; [ dive flyctl just ];
+            buildInputs = with pkgs; [ dive flyctl just clash-geoip ];
+            # this is just a shell script, but we can refer to packages here:
+            shellHook = ''
+              export GEOLITE2_COUNTRY_DB=${clash-geoip}/etc/clash/Country.mmdb
+            '';
           };
         }
       );
