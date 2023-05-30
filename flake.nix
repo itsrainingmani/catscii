@@ -20,11 +20,15 @@
           };
           # this refers to the path ./rust-toolchain.toml
           rustToolchain = pkgs.pkgsBuildHost.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
+          # things you only need at compile-time
+          nativeBuildInputs = with pkgs; [ rustToolchain pkg-config sqlite ];
+          # things you also need at run-time
+          buildInputs = with pkgs; [ openssl ];
         in
         with pkgs;
         {
           devShells.default = mkShell {
-            buildInputs = [ rustToolchain ];
+            inherit buildInputs nativeBuildInputs;
           };
         }
       );
