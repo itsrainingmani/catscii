@@ -1,0 +1,16 @@
+services:
+  catscii:
+    image: "catscii:latest"
+
+    volumes:
+      - catscii-db:/db
+    environment:
+      ANALYTICS_DB: /db/analytics.db
+
+    env_file: ".env"
+    ports:
+      - "8080:8080"
+    stop_signal: SIGINT
+
+volumes:
+  catscii-db:
