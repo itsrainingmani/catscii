@@ -1246,13 +1246,15 @@ checksum = "ef53942eb7bf7ff43a617b3e2c1c4a5ecf5944a7c1bc12d7ee39bbb15e5c1519"
 
 [[package]]
 name = "locat"
-version = "0.4.0"
+version = "1.0.0"
 source = "registry+ssh://git@ssh.shipyard.rs/itsrainingmani/crate-index.git"
-checksum = "4c4cce52474e56ce009d8914f0275a8e4060a3ebaa27ba0aa5f9933e4c2558bb"
+checksum = "9039f402da95830927e304a95d7e3e50ce184740ca588545a6a215d18ba8dc77"
 dependencies = [
  "maxminddb",
  "rusqlite",
  "thiserror",
+ "tokio",
+ "tokio-rusqlite",
 ]
 
 [[package]]
@@ -2326,6 +2328,17 @@ dependencies = [
  "proc-macro2 1.0.59",
  "quote 1.0.28",
  "syn 2.0.18",
+]
+
+[[package]]
+name = "tokio-rusqlite"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a31dfc8c4778d61428ef6b5d0eba26a5953314f307f10fb278f9839d0a1baae5"
+dependencies = [
+ "crossbeam-channel",
+ "rusqlite",
+ "tokio",
 ]
 
 [[package]]

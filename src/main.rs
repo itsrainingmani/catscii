@@ -67,7 +67,7 @@ async fn main() {
 
     let state = ServerState {
         client: Default::default(),
-        locat: Arc::new(Locat::new(&country_db_path, &analytics_db_path).unwrap()),
+        locat: Arc::new(Locat::new(&country_db_path, &analytics_db_path).await.unwrap()),
     };
 
     let app = Router::new()
@@ -110,7 +110,7 @@ async fn root_get(headers: HeaderMap, State(state): State<ServerState>) -> Respo
     ));
 
     if let Some(addr) = get_client_addr(&headers) {
-        match state.locat.ip_to_iso_code(addr) {
+        match state.locat.ip_to_iso_code(addr).await {
             Some(country) => {
                 info!("Got request from {country}");
                 span.set_attribute(KeyValue::new("country", country.to_string()));
@@ -151,7 +151,7 @@ async fn root_get_inner(state: ServerState) -> Response<BoxBody> {
 }
 
 async fn analytics_get(State(state): State<ServerState>) -> Response<BoxBody> {
-    let analytics = state.locat.get_analytics().unwrap();
+    let analytics = state.locat.get_analytics().await.unwrap();
     let mut response = String::new();
     use std::fmt::Write;
     for (country, count) in analytics {
