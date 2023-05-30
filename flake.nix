@@ -45,7 +45,7 @@
           # things you only need at compile-time
           nativeBuildInputs = with pkgs; [ rustToolchain pkg-config sqlite ];
           # things you also need at run-time
-          buildInputs = with pkgs; [ openssl ];
+          buildInputs = with pkgs; [ sqlite ];
           # this will be used for both `cargoArtifacts` and `bin`
           commonArgs = {
             inherit src buildInputs nativeBuildInputs;
@@ -58,7 +58,7 @@
           dockerImage = pkgs.dockerTools.streamLayeredImage {
             name = "catscii";
             tag = "latest";
-            contents = [ bin pkgs.cacert ];
+            contents = [ bin ];
             config = {
               Cmd = [ "${bin}/bin/catscii" ];
               Env = with pkgs; [ "GEOLITE2_COUNTRY_DB=${clash-geoip}/etc/clash/Country.mmdb" ];
