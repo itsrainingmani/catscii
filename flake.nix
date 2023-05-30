@@ -55,10 +55,10 @@
           bin = craneLib.buildPackage (commonArgs // {
             inherit cargoArtifacts;
           });
-          dockerImage = pkgs.dockerTools.buildImage {
+          dockerImage = pkgs.dockerTools.streamLayeredImage {
             name = "catscii";
             tag = "latest";
-            copyToRoot = [ bin pkgs.cacert ];
+            contents = [ bin pkgs.cacert ];
             config = {
               Cmd = [ "${bin}/bin/catscii" ];
               Env = with pkgs; [ "GEOLITE2_COUNTRY_DB=${clash-geoip}/etc/clash/Country.mmdb" ];
